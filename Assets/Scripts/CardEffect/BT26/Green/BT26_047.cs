@@ -201,8 +201,7 @@ namespace DCGO.CardEffects.BT26
 
                 bool CanUseConditionImmunity(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsPermanentExistsOnBattleArea(card.PermanentOfThisCard())
-                        && card == card.PermanentOfThisCard().TopCard;
+                    return true;
                 }
 
                 bool CardCondition(CardSource cardSource)
@@ -212,9 +211,7 @@ namespace DCGO.CardEffects.BT26
 
                 bool SkillCondition(ICardEffect cardEffect)
                 {
-                    return cardEffect != null
-                        && cardEffect.EffectSourceCard != null
-                        && cardEffect.EffectSourceCard.Owner == card.Owner.Enemy
+                    return CardEffectCommons.IsOpponentEffect(cardEffect, card)
                         && cardEffect.EffectSourceCard.IsOption;
                 }
 
