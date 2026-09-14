@@ -1782,6 +1782,8 @@ public class UseOptionClass
 
             yield return ContinuousController.instance.StartCoroutine(card.Owner.brainStormObject.BrainStormCoroutine(card));
 
+            CardEffectCommons.EnforceLocationCheck();//Check if using an option is removing a card from location of pending effect
+
             #region Set HashTable
 
             Hashtable hashtable = new Hashtable()
