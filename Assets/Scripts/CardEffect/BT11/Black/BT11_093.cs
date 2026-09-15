@@ -125,7 +125,7 @@ namespace DCGO.CardEffects.BT11
                                             {
                                                 if (cardEffect.EffectSourceCard.Owner == card.Owner.Enemy)
                                                 {
-                                                    if (cardEffect.EffectSourceCard.IsOption)
+                                                    if (cardEffect.IsOptionEffect)
                                                     {
                                                         return true;
                                                     }
