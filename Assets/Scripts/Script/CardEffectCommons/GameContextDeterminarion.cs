@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,12 +8,11 @@ public partial class CardEffectCommons
     public static Dictionary<ICardEffect, Permanent> CardPermanenceMap = new Dictionary<ICardEffect, Permanent>();
     public static Dictionary<ICardEffect, SelectCardEffect.Root> CardLocationMap = new Dictionary<ICardEffect, SelectCardEffect.Root>();
     public static Dictionary<ICardEffect, CardSource> OnDeletionCardMap = new Dictionary<ICardEffect, CardSource>();
-    public static Dictionary<ICardEffect, DateTime> TrashArrivalMap = new Dictionary<ICardEffect, DateTime>();
+    public static Dictionary<CardSource, Hashtable> LatestTrashingMap = new Dictionary<CardSource, Hashtable>();
 
     #region Invalidate Cards that are not in their correct location
     private static Permanent FailurePermanent = new(new List<CardSource>());
     private static SelectCardEffect.Root FailureLocation = SelectCardEffect.Root.None;
-    private static DateTime FailureTrashArrival = DateTime.MaxValue;
 
     public static void EnforceLocationCheck()
     {
@@ -33,11 +33,6 @@ public partial class CardEffectCommons
                 OnDeletionCardMap[cardEffect] = null;
             }
         }
-        foreach(ICardEffect cardEffect in TrashArrivalMap.Keys.ToList().Clone())
-        {
-            if (!IsStillOnTheSameTrashing(cardEffect))
-                TrashArrivalMap[cardEffect] = FailureTrashArrival;//Mark as a time nothing can ever be trashed at to ensure it will fail -Activate checks
-        }
     }
 
     public static void ClearEffectLocations()
@@ -45,7 +40,7 @@ public partial class CardEffectCommons
         CardPermanenceMap = new Dictionary<ICardEffect, Permanent>();
         CardLocationMap = new Dictionary<ICardEffect, SelectCardEffect.Root>();
         OnDeletionCardMap = new Dictionary<ICardEffect, CardSource>();
-        TrashArrivalMap = new Dictionary<ICardEffect, DateTime>();
+        LatestTrashingMap = new Dictionary<CardSource, Hashtable>();
     }
 
     #endregion
@@ -92,43 +87,33 @@ public partial class CardEffectCommons
     #region Trashing Capture and Check
 
     /// <summary>
-    /// For "when an effect trashes this card" effects, which are stacked before the card physically reaches
-    /// the trash. A stacked effect that cannot resolve yet is re-checked after every later effect rather than
-    /// discarded, so an instance left over from an earlier trashing would otherwise resolve off a later one.
-    /// Use this in CanActivateCondition in place of a bare IsExistOnTrash: it pins the trashing this effect
-    /// instance triggered on the first time the card is seen in the trash, and fails for good once it leaves.
+    /// Records the trashing a "when an effect trashes this card" effect is triggering on. Call it at the end
+    /// of CanUseCondition, after the trigger check has already passed. ITrashDigivolutionCards builds a fresh
+    /// Hashtable per trashing, so the hashtable is that trashing's identity, and the map always holds the most
+    /// recent one for the card. Always returns true so it can be chained onto the trigger check.
     /// </summary>
-    public static bool IsSameTrashingActivate(CardSource card, ICardEffect cardEffect)
+    public static bool CaptureTrashingTrigger(CardSource card, Hashtable hashtable)
     {
-        if (card == null || cardEffect == null) return false;
+        if (card == null || hashtable == null) return false;
 
-        if (!TrashArrivalMap.ContainsKey(cardEffect))
-        {
-            if (!IsExistOnTrash(card)) return false;//Not trashed yet, so stay pending without pinning anything
-
-            TrashArrivalMap[cardEffect] = card.ChangedLocationTime;
-
-            return true;
-        }
-
-        if (!IsStillOnTheSameTrashing(cardEffect))
-        {
-            TrashArrivalMap[cardEffect] = FailureTrashArrival;
-
-            return false;
-        }
+        LatestTrashingMap[card] = hashtable;
 
         return true;
     }
 
-    public static bool IsStillOnTheSameTrashing(ICardEffect cardEffect)
+    /// <summary>
+    /// Use in CanActivateCondition in place of a bare IsExistOnTrash. These effects are stacked before the card
+    /// physically reaches the trash, and a stacked effect that cannot resolve yet is re-checked after every
+    /// later effect rather than discarded, so an instance from an earlier trashing survives the card leaving
+    /// the trash and would otherwise pay out again off a later trashing. Only the most recent trashing resolves.
+    /// </summary>
+    public static bool IsLatestTrashingActivate(CardSource card, Hashtable hashtable)
     {
-        return cardEffect != null
-            && cardEffect.EffectSourceCard != null
-            && TrashArrivalMap.TryGetValue(cardEffect, out DateTime trashedAt)
-            && trashedAt != FailureTrashArrival
-            && IsExistOnTrash(cardEffect.EffectSourceCard)
-            && cardEffect.EffectSourceCard.ChangedLocationTime == trashedAt;
+        return card != null
+            && hashtable != null
+            && IsExistOnTrash(card)
+            && LatestTrashingMap.TryGetValue(card, out Hashtable latestTrashing)
+            && ReferenceEquals(latestTrashing, hashtable);
     }
 
     #endregion

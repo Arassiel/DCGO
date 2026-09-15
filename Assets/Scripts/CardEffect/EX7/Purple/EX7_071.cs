@@ -28,12 +28,13 @@ namespace DCGO.CardEffects.EX7
 
                 bool CanUseCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.CanTriggerOnTrashSelfDigivolutionCard(hashtable, cardEffect => cardEffect != null, card);
+                    return CardEffectCommons.CanTriggerOnTrashSelfDigivolutionCard(hashtable, cardEffect => cardEffect != null, card)
+                        && CardEffectCommons.CaptureTrashingTrigger(card, hashtable);
                 }
 
                 bool CanActivateCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsSameTrashingActivate(card, activateClass)
+                    return CardEffectCommons.IsLatestTrashingActivate(card, hashtable)
                         && card.Owner.CanAddMemory(activateClass);
                 }
 
