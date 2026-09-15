@@ -56,7 +56,7 @@ namespace DCGO.CardEffects.BT26
                         && permanent.IsSuspended;
 
                 bool CanSelectSuspendCondition(Permanent permanent)
-                    => CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaDigimon(permanent, card)
+                    => CardEffectCommons.IsPermanentExistsOnBattleAreaDigimon(permanent)
                         && !permanent.IsSuspended && permanent.CanSuspend;
 
                 bool CanSelectHandCardCondition(CardSource cardSource)
