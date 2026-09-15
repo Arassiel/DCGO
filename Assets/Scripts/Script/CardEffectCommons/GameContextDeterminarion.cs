@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,7 +7,6 @@ public partial class CardEffectCommons
     public static Dictionary<ICardEffect, Permanent> CardPermanenceMap = new Dictionary<ICardEffect, Permanent>();
     public static Dictionary<ICardEffect, SelectCardEffect.Root> CardLocationMap = new Dictionary<ICardEffect, SelectCardEffect.Root>();
     public static Dictionary<ICardEffect, CardSource> OnDeletionCardMap = new Dictionary<ICardEffect, CardSource>();
-    public static Dictionary<CardSource, Hashtable> LatestTrashingMap = new Dictionary<CardSource, Hashtable>();
 
     #region Invalidate Cards that are not in their correct location
     private static Permanent FailurePermanent = new(new List<CardSource>());
@@ -40,7 +38,6 @@ public partial class CardEffectCommons
         CardPermanenceMap = new Dictionary<ICardEffect, Permanent>();
         CardLocationMap = new Dictionary<ICardEffect, SelectCardEffect.Root>();
         OnDeletionCardMap = new Dictionary<ICardEffect, CardSource>();
-        LatestTrashingMap = new Dictionary<CardSource, Hashtable>();
     }
 
     #endregion
@@ -80,40 +77,6 @@ public partial class CardEffectCommons
     public static bool IsTopCardStillInTrash(ICardEffect cardEffect)
     {
         return cardEffect != null && OnDeletionCardMap.TryGetValue(cardEffect, out CardSource card) && card != null && IsExistOnTrash(card);
-    }
-
-    #endregion
-
-    #region Trashing Capture and Check
-
-    /// <summary>
-    /// Records the trashing a "when an effect trashes this card" effect is triggering on. Call it at the end
-    /// of CanUseCondition, after the trigger check has already passed. ITrashDigivolutionCards builds a fresh
-    /// Hashtable per trashing, so the hashtable is that trashing's identity, and the map always holds the most
-    /// recent one for the card. Always returns true so it can be chained onto the trigger check.
-    /// </summary>
-    public static bool CaptureTrashingTrigger(CardSource card, Hashtable hashtable)
-    {
-        if (card == null || hashtable == null) return false;
-
-        LatestTrashingMap[card] = hashtable;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Use in CanActivateCondition in place of a bare IsExistOnTrash. These effects are stacked before the card
-    /// physically reaches the trash, and a stacked effect that cannot resolve yet is re-checked after every
-    /// later effect rather than discarded, so an instance from an earlier trashing survives the card leaving
-    /// the trash and would otherwise pay out again off a later trashing. Only the most recent trashing resolves.
-    /// </summary>
-    public static bool IsLatestTrashingActivate(CardSource card, Hashtable hashtable)
-    {
-        return card != null
-            && hashtable != null
-            && IsExistOnTrash(card)
-            && LatestTrashingMap.TryGetValue(card, out Hashtable latestTrashing)
-            && ReferenceEquals(latestTrashing, hashtable);
     }
 
     #endregion
@@ -174,6 +137,22 @@ public partial class CardEffectCommons
         if (exists)
             CardLocationMap[cardEffect] = SelectCardEffect.Root.Trash;
         return exists;
+    }
+
+    /// <summary>
+    /// For effects that trigger as their card is on its way to the trash, such as "when an effect trashes this
+    /// card from your Digimon's digivolution cards". The trigger fires before the card arrives, so
+    /// IsExistOnTrashTrigger would still find it under the Digimon and pin nothing. Pin Root.Trash for the
+    /// destination instead, so EnforceLocationCheck invalidates the effect if the card leaves the trash before
+    /// it resolves, and pair it with IsExistOnTrashActivate. Always true so it can be chained onto the trigger.
+    /// </summary>
+    public static bool ExpectOnTrashTrigger(ICardEffect cardEffect)
+    {
+        if (cardEffect == null) return false;
+
+        CardLocationMap[cardEffect] = SelectCardEffect.Root.Trash;
+
+        return true;
     }
 
     public static bool IsExistInSecurityTrigger(CardSource card, ICardEffect cardEffect)
