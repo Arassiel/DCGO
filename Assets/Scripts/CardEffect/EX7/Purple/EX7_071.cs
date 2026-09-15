@@ -14,11 +14,6 @@ namespace DCGO.CardEffects.EX7
             #region When Trashed from digivolutions cards
             if (timing == EffectTiming.OnDigivolutionCardDiscarded)
             {
-                //Pinned by IsStillTheSameTrashing below. Declared here because CanActivateCondition captures them.
-                bool hasReachedTrash = false;
-                bool hasLeftTrash = false;
-                DateTime trashedAt = DateTime.MinValue;
-
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("Memory +1", CanUseCondition, card);
                 activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, false, EffectDiscription());
@@ -38,43 +33,8 @@ namespace DCGO.CardEffects.EX7
 
                 bool CanActivateCondition(Hashtable hashtable)
                 {
-                    return IsStillTheSameTrashing()
+                    return CardEffectCommons.IsSameTrashingActivate(card, activateClass)
                         && card.Owner.CanAddMemory(activateClass);
-                }
-
-                //This effect is stacked before the card physically reaches the trash, and a stacked effect that
-                //can't resolve yet is retried rather than discarded. Pin the trashing this instance triggered on,
-                //so an instance left over from an earlier trashing can't resolve off a later one.
-                bool IsStillTheSameTrashing()
-                {
-                    if (hasLeftTrash)
-                    {
-                        return false;
-                    }
-
-                    if (!CardEffectCommons.IsExistOnTrash(card))
-                    {
-                        hasLeftTrash = hasReachedTrash;
-
-                        return false;
-                    }
-
-                    if (!hasReachedTrash)
-                    {
-                        hasReachedTrash = true;
-                        trashedAt = card.ChangedLocationTime;
-
-                        return true;
-                    }
-
-                    if (card.ChangedLocationTime != trashedAt)
-                    {
-                        hasLeftTrash = true;
-
-                        return false;
-                    }
-
-                    return true;
                 }
 
                 IEnumerator ActivateCoroutine(Hashtable _hashtable)
