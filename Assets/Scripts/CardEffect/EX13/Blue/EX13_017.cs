@@ -14,10 +14,10 @@ namespace DCGO.CardEffects.EX13
             if (timing == EffectTiming.None)
             {
                 static bool PermanentCondition(Permanent targetPermanent)
-                    => targetPermanent.TopCard.IsLevel2 && targetPermanent.TopCard.HasCSTraits;
+                    => targetPermanent.TopCard.HasCSTraits;
 
                 cardEffects.Add(CardEffectFactory.AddSelfDigivolutionRequirementStaticEffect(
-                    permanentCondition: PermanentCondition, digivolutionCost: 0, ignoreDigivolutionRequirement: false, card: card, condition: null));
+                    permanentCondition: PermanentCondition, digivolutionCost: 0, ignoreDigivolutionRequirement: false, card: card, condition: null, level: 2));
             }
             #endregion
 
@@ -29,7 +29,7 @@ namespace DCGO.CardEffects.EX13
                 => $"[{tag}] Reveal the top 3 cards of your deck. Add 1 card with [Veedramon] in its text or the [Royal Knight] trait among them to the hand. Return the rest to the bottom of the deck.";
 
             bool CanSelectCardCondition(CardSource cardSource)
-                => cardSource.HasText("Veedramon") || cardSource.CardTraits.Contains("Royal Knight");
+                => cardSource.HasText("Veedramon") || cardSource.HasRoyalKnightTraits;
 
             IEnumerator SharedActivateCoroutine(Hashtable hashtable, ActivateClass activateClass)
             {
@@ -67,7 +67,6 @@ namespace DCGO.CardEffects.EX13
                 activateClass.SetUpICardEffect("By suspending this Digimon with [Veedramon] in its name, it doesn't leave", CanUseCondition, card);
                 activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, 1, true, EffectDescription());
                 activateClass.SetIsInheritedEffect(true);
-                activateClass.SetIsSkippable(true);
                 activateClass.SetHashString("EX13_017_ESS_AT");
                 cardEffects.Add(activateClass);
 
@@ -76,12 +75,12 @@ namespace DCGO.CardEffects.EX13
 
                 bool CanUseCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass)
+                        && card.PermanentOfThisCard().TopCard.ContainsCardName("Veedramon")
                         && CardEffectCommons.CanTriggerWhenRemoveField(hashtable, card)
                         && CardEffectCommons.IsByEffect(hashtable, cardEffect => CardEffectCommons.IsOpponentEffect(cardEffect, card));
 
                 bool CanActivateCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && card.PermanentOfThisCard().TopCard.ContainsCardName("Veedramon")
                         && CardEffectCommons.CanActivateSuspendCostEffect(card);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
