@@ -211,8 +211,8 @@ namespace DCGO.CardEffects.BT13
                                 bool SkillCondition(ICardEffect cardEffect)
                                 {
                                     return CardEffectCommons.IsOpponentEffect(cardEffect, card)
-                                        && ((cardEffect.EffectSourceCard.IsDualCard && cardEffect.IsOptionEffect)
-                                            || (!cardEffect.EffectSourceCard.IsDualCard && cardEffect.EffectSourceCard.IsOption));
+                                        && ((!cardEffect.EffectSourceCard.IsDualCard && cardEffect.EffectSourceCard.IsOption)
+                                            || (cardEffect.EffectSourceCard.IsDualCard && cardEffect.IsOptionEffect));
                                 }
                             }
                         }

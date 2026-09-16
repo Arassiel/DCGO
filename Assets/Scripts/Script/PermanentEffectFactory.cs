@@ -99,9 +99,9 @@ public partial class PermanentEffectFactory
 
         bool SkillCondition(ICardEffect cardEffect)
         {
-            return CardEffectCommons.IsOpponentEffect(cardEffect, permanent.TopCard)
-                && ((cardEffect.EffectSourceCard.IsDualCard && cardEffect.IsOptionEffect)
-                    || (!cardEffect.EffectSourceCard.IsDualCard && cardEffect.EffectSourceCard.IsOption));
+            return CardEffectCommons.IsOpponentEffect(cardEffect, card)
+                && ((!cardEffect.EffectSourceCard.IsDualCard && cardEffect.EffectSourceCard.IsOption)
+                    || (cardEffect.EffectSourceCard.IsDualCard && cardEffect.IsOptionEffect));
         }
 
         CanNotAffectedClass canNotAffectedClass = new CanNotAffectedClass();
