@@ -212,7 +212,8 @@ namespace DCGO.CardEffects.BT26
                 bool SkillCondition(ICardEffect cardEffect)
                 {
                     return CardEffectCommons.IsOpponentEffect(cardEffect, card)
-                        && cardEffect.IsOptionEffect;
+                        && ((cardEffect.EffectSourceCard.IsDualCard && cardEffect.IsOptionEffect)
+                            || (!cardEffect.EffectSourceCard.IsDualCard && cardEffect.EffectSourceCard.IsOption));
                 }
 
                 ICardEffect GetCardEffect(EffectTiming _timing)
