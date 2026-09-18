@@ -98,8 +98,10 @@ namespace DCGO.CardEffects.BT26
                 bool CanUseCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass)
                         && CardEffectCommons.IsOwnerTurn(card)
-                        && (CardEffectCommons.CanTriggerOnTrashHand(hashtable, null, OpponentHandCardCondition)
-                            || CardEffectCommons.CanTriggerOnTrashDigivolutionCard(hashtable, ThisTamerCondition, null, _ => true));
+                        && ((timing == EffectTiming.OnDiscardHand
+                            && CardEffectCommons.CanTriggerOnTrashHand(hashtable, null, OpponentHandCardCondition))
+                        || timing == EffectTiming.OnDigivolutionCardDiscarded
+                            && CardEffectCommons.CanTriggerOnTrashDigivolutionCard(hashtable, ThisTamerCondition, cardEffect => true, _ => true));
 
                 bool CanActivateCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)

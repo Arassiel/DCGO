@@ -120,7 +120,7 @@ namespace DCGO.CardEffects.BT26
                 => CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaTamer(permanent, card);
 
             bool CardConditionC(CardSource cardSource)
-                => cardSource.IsDigimon && (cardSource.EqualsTraits("Vegetation") || cardSource.ContainsTraits("Fairy") || cardSource.EqualsTraits("DATA SQUAD"));
+                => cardSource.IsDigimon && (cardSource.EqualsTraits("Vegetation") || cardSource.EqualsTraits("Fairy") || cardSource.EqualsTraits("DATA SQUAD"));
 
             IEnumerator SharedActivateCoroutineC(Hashtable hashtable, ActivateClass activateClass)
             {

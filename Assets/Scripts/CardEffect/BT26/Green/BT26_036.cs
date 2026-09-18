@@ -30,7 +30,7 @@ namespace DCGO.CardEffects.BT26
                 => $"[{tag}] Reveal the top 3 cards of your deck. Add 1 card with the [Vegetation], [Fairy] or [DATA SQUAD] trait or 1 green Tamer card among them to the hand. Return the rest to the bottom of the deck.";
 
             bool CanSelectRevealCardCondition(CardSource cardSource)
-                => cardSource.EqualsTraits("Vegetation") || cardSource.ContainsTraits("Fairy") || cardSource.EqualsTraits("DATA SQUAD")
+                => cardSource.EqualsTraits("Vegetation") || cardSource.EqualsTraits("Fairy") || cardSource.EqualsTraits("DATA SQUAD")
                     || (cardSource.IsTamer && cardSource.HasCardColor(CardColor.Green));
 
             IEnumerator SharedActivateCoroutine(Hashtable hashtable, ActivateClass activateClass)

@@ -106,6 +106,8 @@ namespace DCGO.CardEffects.BT26
 
                     if (GManager.instance.userSelectionManager.SelectedBoolValue)
                     {
+                        List<Permanent> targetPermanents = new List<Permanent>();
+
                         if (hasOwnVer3)
                         {
                             SelectPermanentEffect selectVer3Effect = GManager.instance.GetComponent<SelectPermanentEffect>();
@@ -116,43 +118,41 @@ namespace DCGO.CardEffects.BT26
                                 canTargetCondition_ByPreSelecetedList: null,
                                 canEndSelectCondition: null,
                                 maxCount: 1,
-                                canNoSelect: true,
+                                canNoSelect: false,
                                 canEndNotMax: false,
-                                selectPermanentCoroutine: null,
-                                afterSelectPermanentCoroutine: AfterSelectPermanentCoroutine,
-                                mode: SelectPermanentEffect.Mode.Destroy,
+                                selectPermanentCoroutine: SelectPermanentCoroutine,
+                                afterSelectPermanentCoroutine: null,
+                                mode: SelectPermanentEffect.Mode.Custom,
                                 cardEffect: activateClass);
 
                             selectVer3Effect.SetUpCustomMessage("Select 1 [Ver.3] trait Digimon to delete.", "The opponent is selecting 1 [Ver.3] trait Digimon to delete.");
 
                             yield return ContinuousController.instance.StartCoroutine(selectVer3Effect.Activate());
 
-                            IEnumerator AfterSelectPermanentCoroutine(List<Permanent> permanents)
+                            IEnumerator SelectPermanentCoroutine(Permanent permanent)
                             {
-                                if (permanents != null && permanents.Count > 0)
+                                if (permanent != null)
                                 {
-                                    isUsed = true;
-
-                                    yield return null;
+                                    targetPermanents.Add(permanent);
                                 }
+
+                                yield return null;
                             }
                         }
 
-                        if (CardEffectCommons.HasMatchConditionPermanent(IsOpponentDigimon))
+                        targetPermanents.AddRange(card.Owner.Enemy.GetBattleAreaDigimons().Filter(IsOpponentDigimon));
+
+                        if (targetPermanents.Count >= 1)
                         {
-                            List<Permanent> targetPermanents = card.Owner.Enemy.GetBattleAreaDigimons().Filter(IsOpponentDigimon);
+                            isUsed = true;
 
-                            if (targetPermanents.Count >= 1)
-                            {
-                                yield return ContinuousController.instance.StartCoroutine(new DestroyPermanentsClass(targetPermanents, CardEffectCommons.CardEffectHashtable(activateClass)).Destroy());
-                            }
+                            yield return ContinuousController.instance.StartCoroutine(new DestroyPermanentsClass(targetPermanents, CardEffectCommons.CardEffectHashtable(activateClass)).Destroy());
                         }
-
-                        if (!isUsed) activateClass.RemoveUse();
                     }
                 }
-            }
 
+                if (!isUsed) activateClass.RemoveUse();
+            }
             #endregion
 
             #region On Play / When Digivolving / Counter

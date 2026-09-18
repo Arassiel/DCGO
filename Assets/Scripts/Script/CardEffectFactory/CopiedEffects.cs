@@ -34,12 +34,7 @@ public partial class CardEffectFactory
 
         bool DefaultCardSourceCondition(CardSource cardSource)
         {
-            // This wrapper only ever grants its copy to its own host (card) -- never to
-            // whatever else happens to be the probed candidate. Without this identity check,
-            // a completely unrelated card could satisfy "permanentCondition(permanent) &&
-            // cardSource == permanent.TopCard" purely by being the top card of card's own
-            // permanent, and get treated as if it were the intended recipient.
-            if (cardSource == null || cardSource != card) return false;
+            if (cardSource == null) return false;
 
             Permanent permanent = cardSource.PermanentOfThisCard();
             if (permanent == null) return false;
@@ -96,9 +91,11 @@ public partial class CardEffectFactory
                         eff.SetOriginalEffectSourceCard(cardSource);
                     }
                 );
+
                 toCopyEffects = toCopyEffects.Filter(
                     cardEffect => effectCondition == null || effectCondition(cardEffect)
                 );
+                
                 foreach (ICardEffect cardEffect in toCopyEffects)
                 {
                     if (cardEffect.IsInheritedEffect || cardEffect.IsLinkedEffect)
@@ -125,7 +122,7 @@ public partial class CardEffectFactory
                         bool ValidCardSourceAtTrigger()
                         {
                             ValidCardSources = validSources(targetSources(sourceCard.PermanentOfThisCard().DigivolutionCards));
-                            return ValidCardSources.Contains(activateClass.OriginalEffectSourceCard);
+                            return ValidCardSources.Contains(cardSource);
                         }
 
                         bool ValidCardSourceAtActivate()
@@ -135,7 +132,7 @@ public partial class CardEffectFactory
                             {
                                 ValidCardSources = validSources(targetSources(sourceCard.PermanentOfThisCard().DigivolutionCards));
                             }
-                            return ValidCardSources.Contains(activateClass.OriginalEffectSourceCard);
+                            return ValidCardSources.Contains(cardSource);
                         }
 
                         var originalUseCondition = activateClass.CanUseCondition;
@@ -162,6 +159,8 @@ public partial class CardEffectFactory
                         // stale redirect in place for the source's own later activations.
                         IEnumerator ActivateWithRedirectedUseTracking(Hashtable hashtable)
                         {
+                            activateClass.SetIsDigimonEffect(true);//Copy effects were for some reason refusing to act as Digimon effects. Explicitly setting here to bypass this being unset
+
                             activateClass.PushUseTrackingRedirectTarget(copiedActivateClass);
                             try
                             {
@@ -181,12 +180,11 @@ public partial class CardEffectFactory
                             activateClass.IsOptional,
                             activateClass.EffectDescription);
 
-                        copiedActivateClass.SetOriginalEffectSourceCard(activateClass.OriginalEffectSourceCard);
-                        copiedActivateClass.SetHashString(GenerateHashString(card, activateClass.OriginalEffectSourceCard, activateClass.HashString, isInheritedEffect, isLinkedEffect));
-                        copiedActivateClass.SetIsInheritedEffect(isInheritedEffect);
-                        copiedActivateClass.SetIsLinkedEffect(isLinkedEffect);
+                        copiedActivateClass.SetOriginalEffectSourceCard(cardSource);
+                        copiedActivateClass.SetHashString(GenerateHashString(card, cardSource, activateClass.HashString, isInheritedEffect, isLinkedEffect));
+                        copiedActivateClass.SetIsInheritedEffect(activateClass.IsInheritedEffect);
+                        copiedActivateClass.SetIsLinkedEffect(activateClass.IsLinkedEffect);
 
-                        copiedActivateClass.SetIsDigimonEffect(true);//Copied effects are currently not inheriting this. All current card with copy effects are digimon. If this changes, check the type of card
 
                         getCardEffects.Add(copiedActivateClass);
 

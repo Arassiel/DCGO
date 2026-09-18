@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 // Jupitermon // Wide Plasment
 namespace DCGO.CardEffects.BT26
@@ -314,7 +315,7 @@ namespace DCGO.CardEffects.BT26
 
                 bool PermanentsCondition(List<Permanent> targetPermanents)
                 {
-                    return true;
+                    return targetPermanents == null || targetPermanents.Count(targetPermanent => targetPermanent != null) == 0;
                 }
 
                 bool CardSourceCondition(CardSource cardSource)
@@ -340,6 +341,7 @@ namespace DCGO.CardEffects.BT26
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("Delete opponent's all Digimon with the lowest DP, Recovery +1", CanUseCondition, card);
                 activateClass.SetUpActivateClass(null, ActivateCoroutine, -1, false, EffectDescription());
+                activateClass.SetIsOptionEffect(true);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()
