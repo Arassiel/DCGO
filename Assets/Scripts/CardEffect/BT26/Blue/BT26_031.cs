@@ -201,6 +201,7 @@ namespace DCGO.CardEffects.BT26
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("1 opponent's Digimon -8000 DP, then by trashing top security, further -5000 DP", CanUseCondition, card);
                 activateClass.SetUpActivateClass(null, ActivateCoroutine, -1, false, EffectDescription());
+                activateClass.SetIsOptionEffect(true);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()
@@ -245,27 +246,30 @@ namespace DCGO.CardEffects.BT26
 
                         if (selectedTarget != null && card.Owner.SecurityCards.Count >= 1)
                         {
-                            if (card.Owner.SecurityCards.Count >= 1)
+                            List<SelectionElement<bool>> selectionElements = new List<SelectionElement<bool>>()
                             {
-                                List<SelectionElement<bool>> selectionElements = new List<SelectionElement<bool>>()
-                                {
-                                    new SelectionElement<bool>(message: $"Yes", value : true, spriteIndex: 0),
-                                    new SelectionElement<bool>(message: $"No", value : false, spriteIndex: 1),
-                                };
+                                new SelectionElement<bool>(message: $"Yes", value : true, spriteIndex: 0),
+                                new SelectionElement<bool>(message: $"No", value : false, spriteIndex: 1),
+                            };
 
-                                string selectPlayerMessage = "Will you trash your top security card?";
-                                string notSelectPlayerMessage = "The opponent is choosing whether or not to trash their top security card.";
+                            string selectPlayerMessage = "Will you trash your top security card?";
+                            string notSelectPlayerMessage = "The opponent is choosing whether or not to trash their top security card.";
 
-                                GManager.instance.userSelectionManager.SetBoolSelection(selectionElements: selectionElements, selectPlayer: card.Owner, selectPlayerMessage: selectPlayerMessage, notSelectPlayerMessage: notSelectPlayerMessage);
+                            GManager.instance.userSelectionManager.SetBoolSelection(selectionElements: selectionElements, selectPlayer: card.Owner, selectPlayerMessage: selectPlayerMessage, notSelectPlayerMessage: notSelectPlayerMessage);
 
-                                yield return ContinuousController.instance.StartCoroutine(GManager.instance.userSelectionManager.WaitForEndSelect());
+                            yield return ContinuousController.instance.StartCoroutine(GManager.instance.userSelectionManager.WaitForEndSelect());
 
-                                bool willTrash = GManager.instance.userSelectionManager.SelectedBoolValue;
+                            bool willTrash = GManager.instance.userSelectionManager.SelectedBoolValue;
 
-                                if (willTrash && selectedTarget != null)
-                                {
-                                    yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.ChangeDigimonDP(targetPermanent: selectedTarget, changeValue: -5000, effectDuration: EffectDuration.UntilOpponentTurnEnd, activateClass: activateClass));
-                                }
+                            if (willTrash && selectedTarget != null)
+                            {
+                                yield return ContinuousController.instance.StartCoroutine(new IDestroySecurity(
+                                    player: card.Owner,
+                                    destroySecurityCount: 1,
+                                    cardEffect: activateClass,
+                                    fromTop: true).DestroySecurity());
+
+                                yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.ChangeDigimonDP(targetPermanent: selectedTarget, changeValue: -5000, effectDuration: EffectDuration.UntilOpponentTurnEnd, activateClass: activateClass));
                             }
                         }
                     }

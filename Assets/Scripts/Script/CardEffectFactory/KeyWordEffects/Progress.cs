@@ -47,11 +47,12 @@ public partial class CardEffectFactory
         {
             if (CardEffectCommons.IsExistOnBattleArea(card))
             {
-                if (cardSource == card)
+                Permanent thisPermanent = card.PermanentOfThisCard();
+                if (cardSource == thisPermanent.TopCard)
                 {
                     if (GManager.instance.attackProcess.IsAttacking)
                     {
-                        if (GManager.instance.attackProcess.AttackingPermanent == cardSource.PermanentOfThisCard())
+                        if (GManager.instance.attackProcess.AttackingPermanent == thisPermanent)
                         {
                             return true;
                         }

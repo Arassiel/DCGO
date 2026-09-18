@@ -2677,7 +2677,7 @@ public class Permanent
                 foreach (Permanent permanent in player.GetFieldPermanents())
                 {
                     #region 場のパーマネントの効果
-                    foreach (ICardEffect cardEffect in permanent.EffectList(EffectTiming.None))
+                    foreach (ICardEffect cardEffect in permanent.EffectList(EffectTiming.None).GetFlatEffects<IRebootEffect>())
                     {
                         if (cardEffect is IRebootEffect)
                         {
@@ -3242,6 +3242,27 @@ public class Permanent
         }
     }
     #endregion
+
+    #region Has Vortex
+    public bool HasVortex
+    {
+        get
+        {
+            foreach (ICardEffect cardEffect in EffectList(EffectTiming.OnEndTurn))
+            {
+                if (cardEffect is ActivateICardEffect
+                && cardEffect.EffectName == "Vortex"
+                && cardEffect.CanTrigger(null))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+    #endregion
+
 
     #region 消滅時効化を持つか
     public bool HasOnDeletionEffect
