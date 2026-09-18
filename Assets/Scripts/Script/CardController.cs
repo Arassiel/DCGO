@@ -943,14 +943,6 @@ public class PlayCardClass
 
                 if (playFailed)
                 {
-                    foreach (Player player in GManager.instance.turnStateMachine.gameContext.Players_ForTurnPlayer)
-                    {
-                        foreach (Permanent permanent in player.GetFieldPermanents())
-                        {
-                            permanent.IsSuspended = permanent.oldIsTapped_playCard;
-                        }
-                    }
-
                     foreach (CardSource cardSource in oldTrashCards)
                     {
                         if (!CardEffectCommons.IsExistOnTrash(cardSource))
@@ -1781,6 +1773,8 @@ public class UseOptionClass
             yield return ContinuousController.instance.StartCoroutine(CardObjectController.AddExecutingCard(card));
 
             yield return ContinuousController.instance.StartCoroutine(card.Owner.brainStormObject.BrainStormCoroutine(card));
+
+            CardEffectCommons.EnforceLocationCheck();//Check if using an option is removing a card from location of pending effect
 
             #region Set HashTable
 

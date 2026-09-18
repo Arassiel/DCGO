@@ -30,6 +30,7 @@ namespace DCGO.CardEffects.BT26
 
                 bool PlayCardCondition(CardSource cardSource)
                     => cardSource.IsDigimon
+                        && cardSource.HasPlayCost
                         && (cardSource.EqualsTraits("Boss") || cardSource.HasTSTraits)
                         && cardSource.Owner == card.Owner;
 

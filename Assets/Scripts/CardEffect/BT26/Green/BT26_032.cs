@@ -56,7 +56,7 @@ namespace DCGO.CardEffects.BT26
                         && permanent.IsSuspended;
 
                 bool CanSelectSuspendCondition(Permanent permanent)
-                    => CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaDigimon(permanent, card)
+                    => CardEffectCommons.IsPermanentExistsOnBattleAreaDigimon(permanent)
                         && !permanent.IsSuspended && permanent.CanSuspend;
 
                 bool CanSelectHandCardCondition(CardSource cardSource)
@@ -208,6 +208,7 @@ namespace DCGO.CardEffects.BT26
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("Suspend 2 opponent's Digimon/Tamer, then 3 can't unsuspend", CanUseCondition, card);
                 activateClass.SetUpActivateClass(null, ActivateCoroutine, -1, false, EffectDescription());
+                activateClass.SetIsOptionEffect(true);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()
