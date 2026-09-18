@@ -1648,6 +1648,24 @@ public class CardSource : MonoBehaviour
 
     #endregion
 
+    #region whether this card has at least 1 card name that contains "Agumon"
+
+    public bool HasAgumonName
+    {
+        get
+        {
+            if (CardNames.Some((cardName) => (cardName.Contains("Agumon") || cardName.Contains("agumon"))
+            && cardName != "Pagumon"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    #endregion
+
     #region whether this card has at least 1 card name that contains "Dramon"
 
     public bool HasDramonName
