@@ -243,16 +243,14 @@ namespace DCGO.CardEffects.EX6
                             yield return null;
                         }
 
-                        if (selectedCards.Count >= 1)
+                        if (selectedCards.Count >= 1
+                        && CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition, true))
                         {
-                            if (CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition, true))
-                            {
-                                Permanent selectedPermanent = card.Owner.GetBreedingAreaPermanents()[0];
+                            Permanent selectedPermanent = card.Owner.GetBreedingAreaPermanents()[0];
 
-                                if (selectedPermanent != null)
-                                {
-                                    yield return ContinuousController.instance.StartCoroutine(selectedPermanent.AddDigivolutionCardsBottom(selectedCards, activateClass));
-                                }
+                            if (selectedPermanent != null)
+                            {
+                                yield return ContinuousController.instance.StartCoroutine(selectedPermanent.AddDigivolutionCardsBottom(selectedCards, activateClass));
                             }
                         }
                     }
