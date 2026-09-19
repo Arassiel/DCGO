@@ -195,6 +195,7 @@ namespace DCGO.CardEffects.BT26
                 activateClass.SetUpICardEffect("May battle 1 opponent's Digimon", CanUseCondition, card);
                 activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, false, EffectDescription());
                 activateClass.SetIsLinkedEffect(true);
+                activateClass.SetIsSkippable(true);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()

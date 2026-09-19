@@ -106,6 +106,7 @@ namespace DCGO.CardEffects.BT26
                 activateClass.SetUpICardEffect("Delete 1 opponent's lowest level Digimon", CanUseCondition, card);
                 activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, false, EffectDescription());
                 activateClass.SetIsLinkedEffect(true);
+                activateClass.SetIsSkippableFunction(CanSkip);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()
@@ -120,29 +121,33 @@ namespace DCGO.CardEffects.BT26
                         && CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass);
 
                 bool CanActivateCondition(Hashtable hashtable)
-                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition);
+                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);
+
+                bool CanSkip(Hashtable hashtable) => !CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
-                    SelectPermanentEffect selectPermanentEffect = GManager.instance.GetComponent<SelectPermanentEffect>();
+                    if (CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition))
+                    {
+                        SelectPermanentEffect selectPermanentEffect = GManager.instance.GetComponent<SelectPermanentEffect>();
 
-                    selectPermanentEffect.SetUp(
-                        selectPlayer: card.Owner,
-                        canTargetCondition: CanSelectPermanentCondition,
-                        canTargetCondition_ByPreSelecetedList: null,
-                        canEndSelectCondition: null,
-                        maxCount: 1,
-                        canNoSelect: false,
-                        canEndNotMax: false,
-                        selectPermanentCoroutine: null,
-                        afterSelectPermanentCoroutine: null,
-                        mode: SelectPermanentEffect.Mode.Destroy,
-                        cardEffect: activateClass);
+                        selectPermanentEffect.SetUp(
+                            selectPlayer: card.Owner,
+                            canTargetCondition: CanSelectPermanentCondition,
+                            canTargetCondition_ByPreSelecetedList: null,
+                            canEndSelectCondition: null,
+                            maxCount: 1,
+                            canNoSelect: false,
+                            canEndNotMax: false,
+                            selectPermanentCoroutine: null,
+                            afterSelectPermanentCoroutine: null,
+                            mode: SelectPermanentEffect.Mode.Destroy,
+                            cardEffect: activateClass);
 
-                    selectPermanentEffect.SetUpCustomMessage("Select 1 Digimon with the lowest level to delete.", "The opponent is selecting 1 Digimon with the lowest level to delete.");
+                        selectPermanentEffect.SetUpCustomMessage("Select 1 Digimon with the lowest level to delete.", "The opponent is selecting 1 Digimon with the lowest level to delete.");
 
-                    yield return ContinuousController.instance.StartCoroutine(selectPermanentEffect.Activate());
+                        yield return ContinuousController.instance.StartCoroutine(selectPermanentEffect.Activate());
+                    }
                 }
             }
             #endregion
