@@ -126,6 +126,7 @@ namespace DCGO.CardEffects.BT26
                 activateClass.SetUpICardEffect("<De-Digivolve 2> 1 opponent's Digimon", CanUseCondition, card);
                 activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, false, EffectDescription());
                 activateClass.SetIsLinkedEffect(true);
+                activateClass.SetIsSkippableFunction(CanSkip);
                 cardEffects.Add(activateClass);
 
                 string EffectDescription()
@@ -139,7 +140,9 @@ namespace DCGO.CardEffects.BT26
                         && CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass);
 
                 bool CanActivateCondition(Hashtable hashtable)
-                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);
+                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);                  
+
+                bool CanSkip(Hashtable hashtable) => !CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
