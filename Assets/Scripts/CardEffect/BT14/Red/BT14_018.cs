@@ -51,15 +51,8 @@ namespace DCGO.CardEffects.BT14
                 bool PermanentCondition(Permanent permanent)
                 {
                     return CardEffectCommons.IsPermanentExistsOnOwnerBattleArea(permanent, card)
-                        && (permanent.TopCard.CardNames.Contains("Amon of Crimson Flame")
-                            || permanent.TopCard.CardNames.Contains("AmonofCrimsonFlame"));
-                }
-
-                bool PermanentCondition1(Permanent permanent)
-                {
-                    return CardEffectCommons.IsPermanentExistsOnOwnerBattleArea(permanent, card)
-                        && (permanent.TopCard.CardNames.Contains("Umon of Blue Thunder")
-                            || permanent.TopCard.CardNames.Contains("UmonofBlueThunder"));
+                        && (permanent.TopCard.EqualsCardName("Amon of Crimson Flame")
+                            || permanent.TopCard.EqualsCardName("Umon of Blue Thunder"));
                 }
 
                 bool CanUseCondition(Hashtable hashtable)
@@ -74,14 +67,13 @@ namespace DCGO.CardEffects.BT14
                 bool CanActivateCondition(Hashtable hashtable)
                 {
                     return CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && (CardEffectCommons.HasMatchConditionPermanent(PermanentCondition)
-                            || CardEffectCommons.HasMatchConditionPermanent(PermanentCondition1));
+                        && CardEffectCommons.HasMatchConditionPermanent(PermanentCondition);
                 }
 
                 IEnumerator ActivateCoroutine(Hashtable _hashtable)
                 {
                     List<Permanent> destroyTargetPermanents = card.Owner.GetBattleAreaPermanents()
-                    .Filter(permanent => PermanentCondition(permanent) || PermanentCondition1(permanent));
+                    .Filter(permanent => PermanentCondition(permanent));
 
                     DestroyPermanentsClass destroyPermanentsClass = new DestroyPermanentsClass(
                         destroyTargetPermanents,
