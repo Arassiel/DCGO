@@ -122,11 +122,12 @@ namespace DCGO.CardEffects.EX13
                         && CardEffectCommons.CanTriggerOnPermanentPlay(hashtable, IsOwnerTamer);
 
                 bool CanActivateCondition(Hashtable hashtable)
-                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition);
+                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);
 
                 IEnumerator ActivateCoroutine(Hashtable _hashtable)
                 {
+                    if (!CardEffectCommons.HasMatchConditionPermanent(CanSelectPermanentCondition)) yield break;
+
                     SelectPermanentEffect selectPermanentEffect = GManager.instance.GetComponent<SelectPermanentEffect>();
 
                     selectPermanentEffect.SetUp(
@@ -174,11 +175,11 @@ namespace DCGO.CardEffects.EX13
 
                 bool CanUseCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass)
+                        && card.PermanentOfThisCard().TopCard.ContainsCardName("Veedramon")
                         && CardEffectCommons.CanTriggerWhenSelfPermanentSuspends(hashtable, card);
 
                 bool CanActivateCondition(Hashtable hashtable)
                     => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && card.PermanentOfThisCard().TopCard.ContainsCardName("Veedramon")
                         && CardEffectCommons.CanUnsuspend(card.PermanentOfThisCard());
 
                 IEnumerator ActivateCoroutine(Hashtable _hashtable)
