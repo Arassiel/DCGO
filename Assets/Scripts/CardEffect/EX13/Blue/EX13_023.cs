@@ -209,15 +209,17 @@ namespace DCGO.CardEffects.EX13
                 bool IsAssemblyCard(CardSource assemblyCard)
                     => assemblyCard != null
                         && assemblyCard.Owner == card.Owner
+                        && assemblyCard.IsDigimon
+                        && assemblyCard.HasLevel
                         && (assemblyCard.ContainsCardName("Veemon") || assemblyCard.ContainsCardName("Veedramon"));
 
                 AssemblyCondition GetAssembly(CardSource cardSource)
                 {
                     if (cardSource != card) return null;
 
-                    AssemblyConditionElement level5Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.IsLevel5, selectMessage: "1 level 5 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
-                    AssemblyConditionElement level4Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.IsLevel4, selectMessage: "1 level 4 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
-                    AssemblyConditionElement level3Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.IsLevel3, selectMessage: "1 level 3 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
+                    AssemblyConditionElement level5Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.Level_Assembly.Contains(5), selectMessage: "1 level 5 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
+                    AssemblyConditionElement level4Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.Level_Assembly.Contains(4), selectMessage: "1 level 4 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
+                    AssemblyConditionElement level3Element = new AssemblyConditionElement(assemblyCard => IsAssemblyCard(assemblyCard) && assemblyCard.Level_Assembly.Contains(3), selectMessage: "1 level 3 card with [Veemon] or [Veedramon] in its name", elementCount: 1);
 
                     return new AssemblyCondition(
                         elements: new List<AssemblyConditionElement>() { level5Element, level4Element, level3Element },
