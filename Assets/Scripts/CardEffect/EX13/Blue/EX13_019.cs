@@ -36,7 +36,8 @@ namespace DCGO.CardEffects.EX13
 
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("Play 1 Tamer card with [Veedramon] in its text from the hand with the cost reduced by 2", CanUseCondition, card);
-                activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, 1, true, EffectDescription());
+                activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, 1, false, EffectDescription());
+                activateClass.SetIsSkippable(true);
                 activateClass.SetHashString("EX13_019_WA");
                 cardEffects.Add(activateClass);
 
