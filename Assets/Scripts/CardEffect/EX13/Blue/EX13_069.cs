@@ -29,8 +29,7 @@ namespace DCGO.CardEffects.EX13
                         && (permanent.TopCard.ContainsCardName("Veemon") || permanent.TopCard.ContainsCardName("Veedramon"));
 
                 bool AdditionalActivateCondition(Hashtable hashtable, ActivateClass activateClass)
-                    => card.Owner.CanAddMemory(activateClass)
-                        && CardEffectCommons.HasMatchConditionOwnersPermanent(card, IsVeemonOrVeedramonDigimon);
+                    => CardEffectCommons.HasMatchConditionOwnersPermanent(card, IsVeemonOrVeedramonDigimon);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable, ActivateClass activateClass)
                 {
