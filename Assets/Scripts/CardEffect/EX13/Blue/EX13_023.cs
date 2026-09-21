@@ -123,8 +123,7 @@ namespace DCGO.CardEffects.EX13
                 => $"[{tag}] You may return all of your opponent's Digimon with the fewest digivolution cards to the bottom of the deck.";
 
             bool IsFewestSourcesOpponentDigimon(Permanent permanent)
-                => CardEffectCommons.IsPermanentExistsOnOpponentBattleAreaDigimon(permanent, card)
-                    && CardEffectCommons.IsMinDigivolutionCards(permanent, card.Owner.Enemy);
+                => CardEffectCommons.IsMinDigivolutionCards(permanent, card.Owner.Enemy);
 
             bool DeckBounceAdditionalActivateCondition(Hashtable hashtable, ActivateClass activateClass)
                 => CardEffectCommons.HasMatchConditionPermanent(IsFewestSourcesOpponentDigimon);
@@ -146,7 +145,6 @@ namespace DCGO.CardEffects.EX13
                 DeckBounceEffectDescription,
                 optional: true,
                 additionalActivateCondition: DeckBounceAdditionalActivateCondition,
-                hashValue: "EX13_023_OP_WD_DB",
                 onPlay: true,
                 whenDigivolving: true);
 
