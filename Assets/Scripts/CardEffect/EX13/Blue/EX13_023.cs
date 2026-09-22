@@ -44,7 +44,7 @@ namespace DCGO.CardEffects.EX13
 
             bool CanChangeOrientationCondition(Permanent permanent)
                 => CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaDigimon(permanent, card)
-                    && (permanent.IsSuspended ? permanent.CanUnsuspend : permanent.CanSuspend);
+                    && permanent.CanChangeOrientation;
 
             bool ChangeOrientationAdditionalActivateCondition(Hashtable hashtable, ActivateClass activateClass)
                 => CardEffectCommons.HasMatchConditionPermanent(CanChangeOrientationCondition);

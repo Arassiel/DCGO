@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 // Jupitermon: Wrath Mode
 namespace DCGO.CardEffects.BT26
