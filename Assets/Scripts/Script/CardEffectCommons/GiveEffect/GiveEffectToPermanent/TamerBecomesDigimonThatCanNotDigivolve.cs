@@ -31,6 +31,8 @@ public partial class CardEffectCommons
             card: card, 
             condition: CanUseCondition);
 
+        treatAsDigimonClass.SetIsOptionEffect(activateClass.IsOptionEffect);
+
         AddEffectToPermanent(
             targetPermanent: targetPermanent, 
             effectDuration: effectDuration, 
@@ -39,36 +41,10 @@ public partial class CardEffectCommons
             timing: EffectTiming.None);
 
         //change origin DP
-        ChangeBaseDPClass changeBaseDPClass = CardEffectFactory.ChangeBaseDPStaticEffect(
-            targetPermanent: targetPermanent, 
-            changeValue: DP, 
-            isInheritedEffect: false, 
-            card: card, 
-            condition: CanUseCondition);
-        changeBaseDPClass.SetActivatedTime(DateTime.Now);
-
-        AddEffectToPermanent(
-            targetPermanent: targetPermanent, 
-            effectDuration: effectDuration, 
-            card: card, 
-            cardEffect: changeBaseDPClass, 
-            timing: EffectTiming.None);
+        ChangeBaseDigimonDP(targetPermanent, DP, effectDuration, activateClass);
 
         //can't Digivolve
-        CanNotDigivolveClass canNotEvolveClass = CardEffectFactory.CanNotDigivolveStaticEffect(
-            permanentCondition: PermanentCondition, 
-            cardCondition: (cardSource) => true, 
-            isInheritedEffect: false, 
-            card: card, 
-            condition: CanUseCondition, 
-            effectName: "Can't digivolve");
-
-        AddEffectToPermanent(
-            targetPermanent: targetPermanent, 
-            effectDuration: effectDuration, 
-            card: card, 
-            cardEffect: canNotEvolveClass, 
-            timing: EffectTiming.None);
+        GainCanNotDigivolve(targetPermanent, effectDuration, activateClass, null, _ => true, false, "Can't digivolve");
 
         yield return ContinuousController.instance.StartCoroutine(GManager.instance.GetComponent<Effects>().CreateBuffEffect(targetPermanent));
     }

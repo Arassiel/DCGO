@@ -40,7 +40,8 @@ public partial class PermanentEffectFactory
         bool CanActivateCondition(Hashtable hashtable)
         {
             return permanent.TopCard != null
-                && CardEffectCommons.IsExistOnBattleArea(permanent.TopCard);
+                && CardEffectCommons.IsExistOnBattleArea(permanent.TopCard)
+                && !permanent.TopCard.CanNotBeAffected(cardEffect);
         }
 
         IEnumerator ActivateCoroutine(Hashtable hashtable)
