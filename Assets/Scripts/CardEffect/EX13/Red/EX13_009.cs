@@ -35,8 +35,7 @@ namespace DCGO.CardEffects.EX13
                         && CardEffectCommons.CanTriggerOnPlay(hashtable, card);
 
                 bool CanActivateCondition(Hashtable hashtable)
-                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && card.Owner.LibraryCards.Count >= 1;
+                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
@@ -87,8 +86,7 @@ namespace DCGO.CardEffects.EX13
                         && CardEffectCommons.CanTriggerOnPermanentPlay(hashtable, IsOwnerWhiteDigimon);
 
                 bool CanActivateCondition(Hashtable hashtable)
-                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass)
-                        && card.Owner.CanAddMemory(activateClass);
+                    => CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass);
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
