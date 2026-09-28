@@ -60,12 +60,11 @@ namespace DCGO.CardEffects.EX13
                         .Where(permanent => permanent != null && PermanentCondition(permanent))
                         .ToList();
 
-                    bool hasGreymon = digivolvedPermanents.Any(permanent => permanent.TopCard.ContainsCardName("Greymon"));
-                    bool hasGarurumon = digivolvedPermanents.Any(permanent => permanent.TopCard.ContainsCardName("Garurumon"));
+                    bool hasGreymon = digivolvedPermanents.Any(permanent => permanent.TopCard.HasGreymonName);
+                    bool hasGarurumon = digivolvedPermanents.Any(permanent => permanent.TopCard.HasGarurumonName);
 
                     yield return ContinuousController.instance.StartCoroutine(new SuspendPermanentsClass(new List<Permanent>() { card.PermanentOfThisCard() }, CardEffectCommons.CardEffectHashtable(activateClass)).Tap());
 
-                    // Select both cards first, then play them together
                     List<CardSource> cardsToPlay = new List<CardSource>();
 
                     if (hasGreymon)
@@ -78,7 +77,6 @@ namespace DCGO.CardEffects.EX13
                         yield return ContinuousController.instance.StartCoroutine(SelectFromHandOrTrash("Agumon"));
                     }
 
-                    // PlayCardClass sets the root (hand/trash) of each card individually
                     yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.PlayPermanentCards(
                         cardSources: cardsToPlay,
                         activateClass: activateClass,
