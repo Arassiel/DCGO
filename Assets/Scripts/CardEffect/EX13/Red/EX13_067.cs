@@ -36,8 +36,7 @@ namespace DCGO.CardEffects.EX13
 
                 bool PermanentCondition(Permanent permanent)
                 {
-                    return CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaDigimon(permanent, card) &&
-                           (permanent.TopCard.ContainsCardName("Greymon") || permanent.TopCard.ContainsCardName("Garurumon"));
+                    return CardEffectCommons.IsPermanentExistsOnOwnerBattleAreaDigimon(permanent, card);
                 }
 
                 bool CanUseCondition(Hashtable hashtable)
@@ -54,34 +53,20 @@ namespace DCGO.CardEffects.EX13
                            card.Owner.GetBattleAreaDigimons().Count <= 1;
                 }
 
-                List<Permanent> DigivolvedPermanents(Hashtable hashtable)
-                {
-                    List<Permanent> permanents = new List<Permanent>();
-
-                    foreach (Hashtable hash in CardEffectCommons.GetHashtablesFromHashtable(hashtable))
-                    {
-                        Permanent permanent = CardEffectCommons.GetPermanentFromHashtable(hash);
-
-                        if (permanent != null && PermanentCondition(permanent))
-                        {
-                            permanents.Add(permanent);
-                        }
-                    }
-
-                    return permanents;
-                }
-
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
-                    List<Permanent> digivolvedPermanents = DigivolvedPermanents(hashtable);
+                    List<Permanent> digivolvedPermanents = CardEffectCommons.GetHashtablesFromHashtable(hashtable)
+                        .Select(CardEffectCommons.GetPermanentFromHashtable)
+                        .Where(permanent => permanent != null && PermanentCondition(permanent))
+                        .ToList();
 
                     bool hasGreymon = digivolvedPermanents.Any(permanent => permanent.TopCard.ContainsCardName("Greymon"));
                     bool hasGarurumon = digivolvedPermanents.Any(permanent => permanent.TopCard.ContainsCardName("Garurumon"));
 
                     yield return ContinuousController.instance.StartCoroutine(new SuspendPermanentsClass(new List<Permanent>() { card.PermanentOfThisCard() }, CardEffectCommons.CardEffectHashtable(activateClass)).Tap());
 
-                    List<CardSource> handCards = new List<CardSource>();
-                    List<CardSource> trashCards = new List<CardSource>();
+                    // Select both cards first, then play them together
+                    List<CardSource> cardsToPlay = new List<CardSource>();
 
                     if (hasGreymon)
                     {
@@ -93,27 +78,14 @@ namespace DCGO.CardEffects.EX13
                         yield return ContinuousController.instance.StartCoroutine(SelectFromHandOrTrash("Agumon"));
                     }
 
-                    if (handCards.Count >= 1)
-                    {
-                        yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.PlayPermanentCards(
-                            cardSources: handCards,
-                            activateClass: activateClass,
-                            payCost: false,
-                            isTapped: false,
-                            root: SelectCardEffect.Root.Hand,
-                            activateETB: true));
-                    }
-
-                    if (trashCards.Count >= 1)
-                    {
-                        yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.PlayPermanentCards(
-                            cardSources: trashCards,
-                            activateClass: activateClass,
-                            payCost: false,
-                            isTapped: false,
-                            root: SelectCardEffect.Root.Trash,
-                            activateETB: true));
-                    }
+                    // PlayCardClass sets the root (hand/trash) of each card individually
+                    yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.PlayPermanentCards(
+                        cardSources: cardsToPlay,
+                        activateClass: activateClass,
+                        payCost: false,
+                        isTapped: false,
+                        root: SelectCardEffect.Root.Hand,
+                        activateETB: true));
 
                     IEnumerator SelectFromHandOrTrash(string cardName)
                     {
@@ -131,29 +103,28 @@ namespace DCGO.CardEffects.EX13
                             yield break;
                         }
 
-                        if (canSelectHand && canSelectTrash)
-                        {
-                            List<SelectionElement<bool>> selectionElements = new List<SelectionElement<bool>>()
-                            {
-                                new SelectionElement<bool>(message: "From hand", value: true, spriteIndex: 0),
-                                new SelectionElement<bool>(message: "From trash", value: false, spriteIndex: 1),
-                            };
+                        List<SelectionElement<int>> selectionElements = new List<SelectionElement<int>>();
+                        if (canSelectHand) selectionElements.Add(new SelectionElement<int>(message: "From hand", value: 1, spriteIndex: 0));
+                        if (canSelectTrash) selectionElements.Add(new SelectionElement<int>(message: "From trash", value: 2, spriteIndex: 1));
+                        selectionElements.Add(new SelectionElement<int>(message: "Don't play", value: 3, spriteIndex: 2));
 
-                            string selectPlayerMessage = $"From which area do you play [{cardName}]?";
-                            string notSelectPlayerMessage = "The opponent is choosing from which area to play a card.";
-
-                            GManager.instance.userSelectionManager.SetBoolSelection(selectionElements: selectionElements, selectPlayer: card.Owner, selectPlayerMessage: selectPlayerMessage, notSelectPlayerMessage: notSelectPlayerMessage);
-                        }
-                        else
-                        {
-                            GManager.instance.userSelectionManager.SetBool(canSelectHand);
-                        }
+                        GManager.instance.userSelectionManager.SetIntSelection(
+                            selectionElements: selectionElements,
+                            selectPlayer: card.Owner,
+                            selectPlayerMessage: $"From which area will you play [{cardName}]?",
+                            notSelectPlayerMessage: "The opponent is choosing from which area to play a card.");
 
                         yield return ContinuousController.instance.StartCoroutine(GManager.instance.userSelectionManager.WaitForEndSelect());
 
-                        bool fromHand = GManager.instance.userSelectionManager.SelectedBoolValue;
+                        int selectedValue = GManager.instance.userSelectionManager.SelectedIntValue;
 
-                        if (fromHand)
+                        IEnumerator SelectCardCoroutine(CardSource cardSource)
+                        {
+                            cardsToPlay.Add(cardSource);
+                            yield return null;
+                        }
+
+                        if (selectedValue == 1)
                         {
                             SelectHandEffect selectHandEffect = GManager.instance.GetComponent<SelectHandEffect>();
 
@@ -166,7 +137,7 @@ namespace DCGO.CardEffects.EX13
                                 canNoSelect: true,
                                 canEndNotMax: false,
                                 isShowOpponent: true,
-                                selectCardCoroutine: SelectHandCardCoroutine,
+                                selectCardCoroutine: SelectCardCoroutine,
                                 afterSelectCardCoroutine: null,
                                 mode: SelectHandEffect.Mode.Custom,
                                 cardEffect: activateClass);
@@ -176,7 +147,7 @@ namespace DCGO.CardEffects.EX13
 
                             yield return ContinuousController.instance.StartCoroutine(selectHandEffect.Activate());
                         }
-                        else
+                        else if (selectedValue == 2)
                         {
                             SelectCardEffect selectCardEffect = GManager.instance.GetComponent<SelectCardEffect>();
 
@@ -185,7 +156,7 @@ namespace DCGO.CardEffects.EX13
                                 canTargetCondition_ByPreSelecetedList: null,
                                 canEndSelectCondition: null,
                                 canNoSelect: () => true,
-                                selectCardCoroutine: SelectTrashCardCoroutine,
+                                selectCardCoroutine: SelectCardCoroutine,
                                 afterSelectCardCoroutine: null,
                                 message: $"Select 1 [{cardName}] to play.",
                                 maxCount: 1,
@@ -199,21 +170,8 @@ namespace DCGO.CardEffects.EX13
                                 cardEffect: activateClass);
 
                             selectCardEffect.SetUpCustomMessage($"Select 1 [{cardName}] to play.", "The opponent is selecting 1 card to play.");
-                            selectCardEffect.SetUpCustomMessage_ShowCard("Played Card");
 
                             yield return ContinuousController.instance.StartCoroutine(selectCardEffect.Activate());
-                        }
-
-                        IEnumerator SelectHandCardCoroutine(CardSource cardSource)
-                        {
-                            handCards.Add(cardSource);
-                            yield return null;
-                        }
-
-                        IEnumerator SelectTrashCardCoroutine(CardSource cardSource)
-                        {
-                            trashCards.Add(cardSource);
-                            yield return null;
                         }
                     }
                 }
