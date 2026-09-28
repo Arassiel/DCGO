@@ -41,14 +41,14 @@ namespace DCGO.CardEffects.EX13
 
                 bool CanUseCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsExistOnBattleArea(card) &&
+                    return CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass) &&
                            CardEffectCommons.IsOwnerTurn(card) &&
                            CardEffectCommons.CanTriggerWhenPermanentDigivolving(hashtable, PermanentCondition);
                 }
 
                 bool CanActivateCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsExistOnBattleArea(card) &&
+                    return CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass) &&
                            CardEffectCommons.CanActivateSuspendCostEffect(card) &&
                            card.Owner.GetBattleAreaDigimons().Count <= 1;
                 }
@@ -101,20 +101,34 @@ namespace DCGO.CardEffects.EX13
                             yield break;
                         }
 
-                        List<SelectionElement<int>> selectionElements = new List<SelectionElement<int>>();
-                        if (canSelectHand) selectionElements.Add(new SelectionElement<int>(message: "From hand", value: 1, spriteIndex: 0));
-                        if (canSelectTrash) selectionElements.Add(new SelectionElement<int>(message: "From trash", value: 2, spriteIndex: 1));
-                        selectionElements.Add(new SelectionElement<int>(message: "Don't play", value: 3, spriteIndex: 2));
+                        bool fromHand = canSelectHand;
 
-                        GManager.instance.userSelectionManager.SetIntSelection(
-                            selectionElements: selectionElements,
-                            selectPlayer: card.Owner,
-                            selectPlayerMessage: $"From which area will you play [{cardName}]?",
-                            notSelectPlayerMessage: "The opponent is choosing from which area to play a card.");
+                        if (canSelectHand && canSelectTrash)
+                        {
+                            List<SelectionElement<int>> selectionElements = new List<SelectionElement<int>>()
+                            {
+                                new(message: "Play from hand", value: 1, spriteIndex: 0),
+                                new(message: "Play from trash", value: 2, spriteIndex: 0),
+                                new(message: "Don't play a card", value: 3, spriteIndex: 1),
+                            };
 
-                        yield return ContinuousController.instance.StartCoroutine(GManager.instance.userSelectionManager.WaitForEndSelect());
+                            GManager.instance.userSelectionManager.SetIntSelection(
+                                selectionElements: selectionElements,
+                                selectPlayer: card.Owner,
+                                selectPlayerMessage: $"From which area will you play [{cardName}]?",
+                                notSelectPlayerMessage: "The opponent is choosing from which area to play a card.");
 
-                        int selectedValue = GManager.instance.userSelectionManager.SelectedIntValue;
+                            yield return ContinuousController.instance.StartCoroutine(GManager.instance.userSelectionManager.WaitForEndSelect());
+
+                            int selected = GManager.instance.userSelectionManager.SelectedIntValue;
+
+                            if (selected == 3)
+                            {
+                                yield break;
+                            }
+
+                            fromHand = selected == 1;
+                        }
 
                         IEnumerator SelectCardCoroutine(CardSource cardSource)
                         {
@@ -122,7 +136,7 @@ namespace DCGO.CardEffects.EX13
                             yield return null;
                         }
 
-                        if (selectedValue == 1)
+                        if (fromHand)
                         {
                             SelectHandEffect selectHandEffect = GManager.instance.GetComponent<SelectHandEffect>();
 
@@ -145,7 +159,7 @@ namespace DCGO.CardEffects.EX13
 
                             yield return ContinuousController.instance.StartCoroutine(selectHandEffect.Activate());
                         }
-                        else if (selectedValue == 2)
+                        else
                         {
                             SelectCardEffect selectCardEffect = GManager.instance.GetComponent<SelectCardEffect>();
 
