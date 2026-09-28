@@ -20,13 +20,13 @@ namespace DCGO.CardEffects.EX13
                     card,
                     "By trashing 1 [Chronicle] trait card from hand, <Draw 1> and gain 1 memory",
                     ActivateCoroutine,
-                    EffectDiscription(),
+                    EffectDescription(),
                     additionalActivateCondition: AdditionalActivateCondition,
                     optional: false,
                     isSkippable: true
                     ));
 
-                string EffectDiscription()
+                string EffectDescription()
                 {
                     return "[Start of Your Main Phase] By trashing 1 [Chronicle] trait card from your hand, <Draw 1> and gain 1 memory.";
                 }
@@ -81,10 +81,10 @@ namespace DCGO.CardEffects.EX13
             {
                 ActivateClass activateClass = new ActivateClass();
                 activateClass.SetUpICardEffect("Suspend this Tamer to use [X Antibody] or a [Chronicle] Option with cost -1", CanUseCondition, card);
-                activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, true, EffectDiscription());
+                activateClass.SetUpActivateClass(CanActivateCondition, ActivateCoroutine, -1, true, EffectDescription());
                 cardEffects.Add(activateClass);
 
-                string EffectDiscription()
+                string EffectDescription()
                 {
                     return "[Your Turn] When one of your [Chronicle] trait Digimon attacks, by suspending this Tamer, you may use 1 [X Antibody] or 1 Option card with the [Chronicle] trait from your hand with the cost reduced by 1.";
                 }
