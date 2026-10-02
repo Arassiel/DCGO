@@ -57,22 +57,26 @@ namespace DCGO.CardEffects.EX13
 
                 bool CanUseCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsExistOnBattleArea(card) &&
+                    return CardEffectCommons.IsExistOnBattleAreaTrigger(card, activateClass) &&
                            CardEffectCommons.IsOwnerTurn(card) &&
                            CardEffectCommons.CanTriggerOnPermanentPlay(hashtable, PermanentCondition);
                 }
 
                 bool CanActivateCondition(Hashtable hashtable)
                 {
-                    return CardEffectCommons.IsExistOnBattleArea(card) &&
+                    return CardEffectCommons.IsExistOnBattleAreaActivate(card, activateClass) &&
                            CardEffectCommons.CanActivateSuspendCostEffect(card);
                 }
 
                 IEnumerator ActivateCoroutine(Hashtable hashtable)
                 {
-                    yield return ContinuousController.instance.StartCoroutine(new SuspendPermanentsClass(new List<Permanent>() { card.PermanentOfThisCard() }, CardEffectCommons.CardEffectHashtable(activateClass)).Tap());
+                    yield return ContinuousController.instance.StartCoroutine(CardEffectCommons.SuspendPeremanentAndProcessAccordingToResult(
+                        new List<Permanent>() { card.PermanentOfThisCard() },
+                        activateClass,
+                        SuccessProcess,
+                        null));
 
-                    if (card.PermanentOfThisCard().IsSuspended)
+                    IEnumerator SuccessProcess(List<Permanent> suspendedPermanents)
                     {
                         yield return ContinuousController.instance.StartCoroutine(new DrawClass(card.Owner, 1, activateClass).Draw());
 
